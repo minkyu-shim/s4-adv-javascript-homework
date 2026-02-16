@@ -24,15 +24,30 @@ import { logError } from "./logger.js"
 // ============================================================================
 
 export function exercise2_PrimitiveQuantity() {
+	type Quantity = number & { readonly __brand: unique symbol }
+
+	const createQuantity = (quantity: number): Quantity => {
+		if (!Number.isInteger(quantity)) {
+			throw new Error("Quantity must be a whole number")
+		}
+		if (quantity <= 0) {
+			throw new Error("Quantity must be positive")
+		}
+		if (quantity > 100) {
+			throw new Error("Quantity exceeds maximum per order")
+		}
+		return quantity as Quantity
+	}
+
 	type Order = {
 		itemName: string
-		quantity: number // Could be 0, negative, or absurdly high!
+		quantity: Quantity
 		pricePerUnit: number
 	}
 
 	const order: Order = {
 		itemName: "Pizza",
-		quantity: -3, // Silent bug! Negative quantity
+		quantity: createQuantity(2),
 		pricePerUnit: 15,
 	}
 
@@ -51,7 +66,7 @@ export function exercise2_PrimitiveQuantity() {
 	// Another silent bug - absurd quantity
 	const bulkOrder: Order = {
 		itemName: "Coffee",
-		quantity: 50000, // Silent bug! Unrealistic quantity
+		quantity: createQuantity(15),
 		pricePerUnit: 3,
 	}
 
@@ -60,4 +75,16 @@ export function exercise2_PrimitiveQuantity() {
 		calculatedTotal: bulkOrder.quantity * bulkOrder.pricePerUnit,
 		issue: "Should we really accept an order for 50,000 coffees?",
 	})
+
+	try {
+		createQuantity(-3)
+	} catch (error) {
+		logError(2, "Negative quantity now rejected at creation time", (error as Error).message)
+	}
+
+	try {
+		createQuantity(50_000)
+	} catch (error) {
+		logError(2, "Absurd quantity now rejected at creation time", (error as Error).message)
+	}
 }
