@@ -32,30 +32,54 @@ import { logError } from "./logger.js"
 // ============================================================================
 
 export function exercise5_IdentityCrisis() {
+	type OrderId = string & { readonly __brand: unique symbol }
+
+	const createOrderId = (raw: string): OrderId => {
+		const trimmed = raw.trim()
+		if (!/^ORD-\d{5,}$/.test(trimmed)) {
+			throw new Error("OrderId must match ORD-XXXXX format")
+		}
+		return trimmed as OrderId
+	}
+
 	type Order = {
-		orderId: string // Just a string - could be anything!
+		orderId: OrderId
 		customerName: string
 		total: number
 	}
 
-	// TODO: Replace `string` with an OrderId branded type.
-	// Use a factory function that enforces a consistent format.
-	// Consider who is responsible for uniqueness (hint: Repository pattern).
+	class OrderRepository {
+		private readonly orders = new Map<OrderId, Order>()
 
-	// What makes a valid order ID? Nothing enforced!
-	const orders: Order[] = [
+		add(order: Order): void {
+			if (this.orders.has(order.orderId)) {
+				throw new Error(`Duplicate orderId: ${order.orderId}`)
+			}
+			this.orders.set(order.orderId, order)
+		}
+
+		list(): Order[] {
+			return Array.from(this.orders.values())
+		}
+	}
+
+	// TODO completed: OrderId is now a branded type and uniqueness is
+	// enforced by the repository.
+	const repository = new OrderRepository()
+
+	const rawOrders = [
 		{
 			orderId: "", // Silent bug! Empty ID
 			customerName: "Alice",
 			total: 25,
 		},
 		{
-			orderId: "12345", // Is this valid?
+			orderId: "ORD-12345",
 			customerName: "Bob",
 			total: 30,
 		},
 		{
-			orderId: "12345", // Silent bug! Duplicate ID
+			orderId: "ORD-12345", // Silent bug! Duplicate ID
 			customerName: "Charlie",
 			total: 15,
 		},
@@ -64,10 +88,31 @@ export function exercise5_IdentityCrisis() {
 			customerName: "Diana",
 			total: 20,
 		},
+		{
+			orderId: "ORD-67890",
+			customerName: "Eve",
+			total: 22,
+		},
 	]
 
-	logError(5, "Order ID chaos - duplicates, empty, inconsistent formats", {
-		orders,
-		issue: "Order IDs have no enforced format or uniqueness!",
+	for (const rawOrder of rawOrders) {
+		try {
+			const order: Order = {
+				orderId: createOrderId(rawOrder.orderId),
+				customerName: rawOrder.customerName,
+				total: rawOrder.total,
+			}
+			repository.add(order)
+		} catch (error) {
+			logError(5, "Invalid or duplicate order rejected", {
+				order: rawOrder,
+				reason: (error as Error).message,
+			})
+		}
+	}
+
+	logError(5, "Repository contains only valid unique order IDs", {
+		orders: repository.list(),
+		issue: "Order IDs have enforced format and uniqueness boundary checks",
 	})
 }

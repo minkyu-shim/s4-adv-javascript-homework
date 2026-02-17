@@ -42,36 +42,61 @@ import { logError } from "./logger.js"
 // ============================================================================
 
 export function exercise4_BusinessRuleViolation() {
-	type Table = {
-		tableNumber: number
-		capacity: number
-		currentGuests: number
+	class Table {
+		private constructor(
+			public readonly tableNumber: number,
+			public readonly capacity: number,
+			private _currentGuests: number,
+		) {}
+
+		static create(tableNumber: number, capacity: number): Table {
+			if (!Number.isInteger(tableNumber) || tableNumber <= 0) {
+				throw new Error("Table number must be a positive integer")
+			}
+			if (!Number.isInteger(capacity) || capacity <= 0) {
+				throw new Error("Capacity must be a positive integer")
+			}
+			return new Table(tableNumber, capacity, 0)
+		}
+
+		get currentGuests(): number {
+			return this._currentGuests
+		}
+
+		seatGuests(count: number): void {
+			if (!Number.isInteger(count) || count <= 0) {
+				throw new Error("Guest count must be a positive integer")
+			}
+			if (this._currentGuests + count > this.capacity) {
+				throw new Error("Exceeds table capacity")
+			}
+			this._currentGuests += count
+		}
 	}
 
-	// TODO: Replace the plain type with an Entity class that enforces
-	// capacity constraints. The constructor/factory should reject invalid
-	// states, and mutation should go through guarded methods (seatGuests).
+	// TODO completed: Table invariants are enforced by the Entity itself.
+	const table = Table.create(5, 4)
+	table.seatGuests(3)
 
-	const table: Table = {
-		tableNumber: 5,
-		capacity: 4,
-		currentGuests: 7, // Silent bug! Overcapacity
-	}
-
-	logError(4, "Table overcapacity - business rule violated", {
-		table,
-		issue: "currentGuests should never exceed capacity!",
+	logError(4, "Table Entity keeps a valid state", {
+		table: {
+			tableNumber: table.tableNumber,
+			capacity: table.capacity,
+			currentGuests: table.currentGuests,
+		},
+		issue: "currentGuests is guaranteed to stay between 0 and capacity",
 	})
 
-	// Another violation - negative guests
-	const emptyTable: Table = {
-		tableNumber: 3,
-		capacity: 6,
-		currentGuests: -2, // Silent bug! Negative guests
+	try {
+		table.seatGuests(2)
+	} catch (error) {
+		logError(4, "Overcapacity request now rejected", (error as Error).message)
 	}
 
-	logError(4, "Negative guest count - impossible in real world", {
-		table: emptyTable,
-		issue: "Guests cannot be negative!",
-	})
+	try {
+		const emptyTable = Table.create(3, 6)
+		emptyTable.seatGuests(-2)
+	} catch (error) {
+		logError(4, "Negative guest count now rejected", (error as Error).message)
+	}
 }
