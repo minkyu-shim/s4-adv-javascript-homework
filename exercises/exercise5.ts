@@ -104,15 +104,15 @@ export function exercise5_IdentityCrisis() {
 			}
 			repository.add(order)
 		} catch (error) {
-			logError(5, "Invalid or duplicate order rejected", {
+			logError(5, "Skipped this order because id is bad or already used", {
 				order: rawOrder,
 				reason: (error as Error).message,
 			})
 		}
 	}
 
-	logError(5, "Repository contains only valid unique order IDs", {
+	logError(5, "Repository now has only good unique IDs", {
 		orders: repository.list(),
-		issue: "Order IDs have enforced format and uniqueness boundary checks",
+		issue: "Order id format and duplicates are checked.",
 	})
 }

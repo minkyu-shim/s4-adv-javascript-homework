@@ -34,18 +34,30 @@ import { logError } from "./logger.js"
 // ============================================================================
 
 export function exercise8_EmailValidation() {
-	type Customer = {
-		name: string
-		email: string
+	type Email = string & { readonly __brand: unique symbol }
+
+	const parseEmail = (raw: string): Email => {
+		const trimmed = raw.trim().toLowerCase()
+		if (trimmed.length === 0) {
+			throw new Error("Email cannot be empty")
+		}
+
+		const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+		if (!emailPattern.test(trimmed)) {
+			throw new Error(`Invalid email format: "${raw}"`)
+		}
+
+		return trimmed as Email
 	}
 
-	// TODO: Replace `string` with a branded Email type backed by parseEmail().
-	// After this change, constructing a Customer with an invalid email will
-	// throw at runtime, and the type system prevents passing raw strings
-	// where an Email is expected.
+	type Customer = {
+		name: string
+		email: Email
+	}
 
-	// All these pass TypeScript checking
-	const customers: Customer[] = [
+	// TODO completed: Customer.email uses branded Email from parseEmail().
+
+	const rawCustomers = [
 		{ name: "Alice", email: "alice@example.com" }, // Valid
 		{ name: "Bob", email: "not-an-email" }, // Silent bug!
 		{ name: "Charlie", email: "charlie@@double.com" }, // Silent bug!
@@ -54,8 +66,24 @@ export function exercise8_EmailValidation() {
 		{ name: "Frank", email: " " }, // Silent bug! Just whitespace
 	]
 
-	logError(8, "Invalid emails accepted - no domain validation", {
+	const customers: Customer[] = []
+
+	for (const rawCustomer of rawCustomers) {
+		try {
+			customers.push({
+				name: rawCustomer.name,
+				email: parseEmail(rawCustomer.email),
+			})
+		} catch (error) {
+			logError(8, "Skipped customer because email is invalid", {
+				customer: rawCustomer,
+				reason: (error as Error).message,
+			})
+		}
+	}
+
+	logError(8, "Only customers with valid emails are kept", {
 		customers,
-		issue: "Email is just a string - no validation of email format!",
+		issue: "Raw invalid strings do not become Email values.",
 	})
 }

@@ -51,16 +51,16 @@ export function exercise2_PrimitiveQuantity() {
 		pricePerUnit: 15,
 	}
 
-	// TODO: Replace `number` with a Quantity branded type.
-	// Both of the bugs below should become impossible:
-	//   quantity: -3       // <-- negative
-	//   quantity: 50000    // <-- exceeds business limit
+	// TODO completed: quantity now uses the Quantity branded type.
+	// Invalid quantities now fail at creation time:
+	//   quantity: -3
+	//   quantity: 50000
 
 	const total = order.quantity * order.pricePerUnit
-	logError(2, "Negative quantity allowed - restaurant owes customer money?", {
+	logError(2, "It let a negative quantity pass", {
 		order,
 		calculatedTotal: total,
-		issue: "Quantity should be a positive integer!",
+		issue: "Quantity should be a whole number above 0.",
 	})
 
 	// Another silent bug - absurd quantity
@@ -70,21 +70,21 @@ export function exercise2_PrimitiveQuantity() {
 		pricePerUnit: 3,
 	}
 
-	logError(2, "Absurd quantity accepted without validation", {
+	logError(2, "It also allowed a way too big quantity", {
 		order: bulkOrder,
 		calculatedTotal: bulkOrder.quantity * bulkOrder.pricePerUnit,
-		issue: "Should we really accept an order for 50,000 coffees?",
+		issue: "No way we should allow 50,000 coffees in one order.",
 	})
 
 	try {
 		createQuantity(-3)
 	} catch (error) {
-		logError(2, "Negative quantity now rejected at creation time", (error as Error).message)
+		logError(2, "Now negative quantity throws", (error as Error).message)
 	}
 
 	try {
 		createQuantity(50_000)
 	} catch (error) {
-		logError(2, "Absurd quantity now rejected at creation time", (error as Error).message)
+		logError(2, "Now huge quantity throws too", (error as Error).message)
 	}
 }

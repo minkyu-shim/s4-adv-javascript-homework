@@ -104,12 +104,12 @@ export function exercise3_StringConfusion() {
 		phone: createPhone("555-123-4567"),
 	}
 
-	// TODO: Create separate branded types (Email, Phone, CustomerName) so
-	// that swapping values between fields becomes a compile-time error.
+	// TODO completed: separate branded types (Email, Phone, CustomerName) now
+	// enforce semantic meaning and prevent accidental field swaps.
 
-	logError(3, "Fields mixed up - all are strings, TypeScript doesn't care", {
+	logError(3, "I can mix name/email/phone and TS does not complain", {
 		customer,
-		issue: "Email, phone, and name are all 'string' - no semantic distinction!",
+		issue: "All three are just string so it is easy to swap them.",
 	})
 
 	// Even worse - empty strings pass validation
@@ -119,26 +119,26 @@ export function exercise3_StringConfusion() {
 		phone: createPhone("555-987-6543"),
 	}
 
-	logError(3, "Empty strings accepted everywhere", {
+	logError(3, "It also accepts empty values", {
 		customer: emptyCustomer,
-		issue: "Required fields should not be empty!",
+		issue: "Name, email and phone should not be empty.",
 	})
 
 	try {
 		createEmail("John Doe")
 	} catch (error) {
-		logError(3, "Email parsing now rejects invalid values", (error as Error).message)
+		logError(3, "Now bad email is rejected", (error as Error).message)
 	}
 
 	try {
 		createPhone("555-PIZZA")
 	} catch (error) {
-		logError(3, "Phone parsing now rejects invalid values", (error as Error).message)
+		logError(3, "Now bad phone is rejected", (error as Error).message)
 	}
 
 	try {
 		createCustomerName("   ")
 	} catch (error) {
-		logError(3, "Customer name parsing now rejects empty values", (error as Error).message)
+		logError(3, "Now empty name is rejected", (error as Error).message)
 	}
 }

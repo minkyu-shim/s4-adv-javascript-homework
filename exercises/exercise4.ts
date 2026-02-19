@@ -78,25 +78,25 @@ export function exercise4_BusinessRuleViolation() {
 	const table = Table.create(5, 4)
 	table.seatGuests(3)
 
-	logError(4, "Table Entity keeps a valid state", {
+	logError(4, "Table state stays valid now", {
 		table: {
 			tableNumber: table.tableNumber,
 			capacity: table.capacity,
 			currentGuests: table.currentGuests,
 		},
-		issue: "currentGuests is guaranteed to stay between 0 and capacity",
+		issue: "currentGuests cannot go below 0 or above capacity.",
 	})
 
 	try {
 		table.seatGuests(2)
 	} catch (error) {
-		logError(4, "Overcapacity request now rejected", (error as Error).message)
+		logError(4, "Now it blocks seating too many guests", (error as Error).message)
 	}
 
 	try {
 		const emptyTable = Table.create(3, 6)
 		emptyTable.seatGuests(-2)
 	} catch (error) {
-		logError(4, "Negative guest count now rejected", (error as Error).message)
+		logError(4, "Now it blocks negative guest count", (error as Error).message)
 	}
 }

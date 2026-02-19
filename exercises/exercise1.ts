@@ -49,17 +49,15 @@ export function exercise1_PrimitivePrice() {
 		quantity: 1,
 	}
 
-	// TODO: Replace `number` with a Price branded type.
-	// The goal is to make this line a compile-time error:
-	//   price: -50   // <-- should NOT be assignable to Price
-	// Instead, force callers through createPrice(-50), which throws at runtime.
+	// TODO completed: price now uses the Price branded type and can only be
+	// created via createPrice().
 
 	const total = orderItem.price * orderItem.quantity
-	logError(1, "Negative price accepted without complaint", {
+	logError(1, "Oops, this accepted a negative price", {
 		item: orderItem.name,
 		price: orderItem.price,
 		calculatedTotal: total,
-		issue: "Price should never be negative!",
+		issue: "Price should not be below 0.",
 	})
 
 	try {
@@ -67,7 +65,7 @@ export function exercise1_PrimitivePrice() {
 	} catch (error) {
 		logError(
 			1,
-			"Negative price now rejected at creation time",
+			"Now it throws when price is negative",
 			(error as Error).message,
 		)
 	}

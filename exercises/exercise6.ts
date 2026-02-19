@@ -84,7 +84,7 @@ export function exercise6_TemporalLogic() {
 	// live inside OperatingHours.
 	const testHour = createHour(2)
 
-	logError(6, "OperatingHours handles overnight logic correctly", {
+	logError(6, "Overnight open and close check works now", {
 		restaurant: {
 			name: restaurant.name,
 			opensAt: restaurant.operatingHours.opens,
@@ -92,7 +92,7 @@ export function exercise6_TemporalLogic() {
 		},
 		testHour,
 		isOpenCalculated: restaurant.operatingHours.isOpenAt(testHour), // true
-		issue: "Overnight spans are handled by domain logic inside Value Object",
+		issue: "Cross-midnight logic is handled in one place.",
 	})
 
 	try {
@@ -100,10 +100,10 @@ export function exercise6_TemporalLogic() {
 			name: "Broken Cafe",
 			operatingHours: OperatingHours.create(25, -5),
 		}
-		logError(6, "Invalid hours accepted without validation", {
+		logError(6, "It accepted invalid hours (this should not happen)", {
 			restaurant: brokenRestaurant,
 		})
 	} catch (error) {
-		logError(6, "Invalid hours now rejected at creation time", (error as Error).message)
+		logError(6, "Now invalid hours throw during creation", (error as Error).message)
 	}
 }

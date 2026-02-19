@@ -45,32 +45,73 @@ import { logError } from "./logger.js"
 // ============================================================================
 
 export function exercise7_CurrencyConfusion() {
+	type Currency = "USD" | "EUR" | "GBP"
+
+	class Money {
+		private constructor(
+			private readonly cents: number,
+			public readonly currency: Currency,
+		) {}
+
+		static fromDollars(amount: number, currency: Currency): Money {
+			if (!Number.isFinite(amount) || amount < 0) {
+				throw new Error("Amount in dollars must be a non-negative number")
+			}
+			return new Money(Math.round(amount * 100), currency)
+		}
+
+		static fromCents(cents: number, currency: Currency): Money {
+			if (!Number.isInteger(cents) || cents < 0) {
+				throw new Error("Cents must be a non-negative integer")
+			}
+			return new Money(cents, currency)
+		}
+
+		add(other: Money): Money {
+			if (this.currency !== other.currency) {
+				throw new Error("Cannot add money with different currencies")
+			}
+			return new Money(this.cents + other.cents, this.currency)
+		}
+
+		format(): string {
+			const amount = (this.cents / 100).toFixed(2)
+			return `${this.currency} ${amount}`
+		}
+	}
+
 	type MenuItem = {
 		name: string
-		price: number // In what currency? Cents? Dollars?
+		price: Money
 	}
 
 	const burger: MenuItem = {
 		name: "Burger",
-		price: 12.5, // Is this $12.50 or 12.5 cents?
+		price: Money.fromDollars(12.5, "USD"),
 	}
 
 	const pizza: MenuItem = {
 		name: "Pizza",
-		price: 1850, // Is this $18.50 or $1850?
+		price: Money.fromCents(1850, "USD"),
 	}
 
-	// TODO: Replace `number` with a Money Value Object.
-	// Force a single canonical representation (e.g., cents) so that
-	// adding burger.price + pizza.price always means the same thing.
+	// TODO completed: Money now stores a canonical unit (cents) and currency.
 
-	// Calculations produce unexpected results
-	const total = burger.price + pizza.price // 12.5 + 1850 = 1862.5
-	const formattedTotal = `$${total.toFixed(2)}` // $1862.50 ??
+	const total = burger.price.add(pizza.price)
 
-	logError(7, "Currency unit confusion leads to calculation errors", {
-		items: [burger, pizza],
-		calculatedTotal: formattedTotal,
-		issue: "Are prices in dollars or cents? TypeScript doesn't know!",
+	logError(7, "Using Money fixed the dollars vs cents mixup", {
+		items: [
+			{ name: burger.name, price: burger.price.format() },
+			{ name: pizza.name, price: pizza.price.format() },
+		],
+		calculatedTotal: total.format(),
+		issue: "Everything is stored as cents with a currency.",
 	})
+
+	try {
+		const serviceFee = Money.fromCents(250, "EUR")
+		total.add(serviceFee)
+	} catch (error) {
+		logError(7, "Now adding USD and EUR throws", (error as Error).message)
+	}
 }
